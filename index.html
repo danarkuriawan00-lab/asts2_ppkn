@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Asesmen SDN 1 Gondang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0284c7;
+            --secondary-blue: #93c5fd;
+            --accent-green: #10b981;
+            --bg-gray: #f3f4f6;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: #e5e7eb;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 640px) {
+            .app-container {
+                height: 90vh;
+                border-radius: 24px;
+            }
+        }
+
+        .font-sahabat {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.1em;
+            background: linear-gradient(to bottom, #1e293b, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(1px 1px 0px rgba(255,255,255,0.3));
+        }
+
+        .login-card {
+            background-color: var(--secondary-blue);
+            border-radius: 20px;
+            padding: 40px 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-masuk {
+            background-color: var(--accent-green);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-masuk:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--primary-blue);
+            border-radius: 12px;
+            color: white;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .option-item {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .selected-option {
+            background-color: #dbeafe !important;
+            border-color: #3b82f6 !important;
+            transform: translateX(8px);
+        }
+
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+        }
+
+        .input-field {
+            background-color: var(--primary-blue);
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            padding: 14px;
+            border-radius: 12px;
+            width: 100%;
+            border: 2px solid transparent;
+            outline: none;
+        }
+
+        .input-field::placeholder { color: rgba(255,255,255,0.7); }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container p-6" id="app">
+    <!-- Overlay Loading saat Kirim Data -->
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-14 w-14 border-4 border-blue-400 border-t-transparent mb-4"></div>
+        <p class="font-bold text-lg">Mengirim Jawaban...</p>
+    </div>
+
+    <!-- Screen 1: Login Siswa -->
+    <div id="login-screen" class="flex flex-col items-center">
+        <div class="mt-8 mb-6">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiUAgnz3M-C0b4aP4NCccOVpRTBjimetBgZhyphenhyphenkGcMIcG3YY7RhacnjOZFFonylLQGbQ0LQHR7n4cOk7XN8mDb9YmRrXgJi5q7yZCEEKpQ4CYuB9WaZLCNw35_qVPvcRTizOMvZXsYVqmAOSfxDv9bUmpB9z_-2G3ecR_C1CONgsQ5-5U5NA2B9rpU4zfJnZ/w200-h200/sdn%20gng%201.png" alt="Logo SDN 1 Gondang" class="w-28 h-28 object-contain">
+        </div>
+
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 leading-tight uppercase">Selamat Datang</h1>
+            <h2 class="text-5xl font-black mb-2 font-sahabat uppercase">Sahabat</h2>
+            <p class="text-[11px] text-gray-600 font-medium tracking-widest uppercase">
+                Sistem Asesmen Hasil Amanah Berprestasi Akurat & Terpercaya
+            </p>
+        </div>
+
+        <div class="w-full login-card">
+            <div class="space-y-4">
+                <input type="text" id="name" placeholder="NAMA LENGKAP" class="input-field uppercase">
+                <input type="number" id="absen" placeholder="NOMOR ABSEN" class="input-field">
+                <button onclick="startExam()" class="w-full py-4 mt-4 rounded-xl btn-masuk text-white font-bold text-lg shadow-lg uppercase">
+                    Mulai Ujian
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Area Ujian -->
+    <div id="exam-screen" class="hidden flex flex-col h-full">
+        <div class="w-full bg-gray-300 rounded-full h-2 mb-6">
+            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <span class="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
+                Soal <span id="current-number">1</span> / <span id="total-questions">0</span>
+            </span>
+            <span id="timer" class="text-gray-700 font-mono font-bold text-sm bg-white px-3 py-1 rounded-lg shadow-sm">00:00</span>
+        </div>
+        
+        <div class="flex-grow">
+            <div class="bg-white rounded-2xl p-6 shadow-sm mb-6 border-b-4 border-blue-200">
+                <p id="question-text" class="text-lg font-bold text-gray-800 leading-snug">Memuat soal...</p>
+            </div>
+            <div id="options-container" class="space-y-3"></div>
+        </div>
+
+        <div class="flex justify-between items-center mt-8 pb-6 gap-4">
+            <button onclick="prevQuestion()" id="prev-btn" class="btn-nav flex-1 opacity-50" disabled>Sebelumnya</button>
+            <button onclick="handleNext()" class="btn-nav flex-1" id="next-btn">Selanjutnya</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Selesai -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="text-xl font-bold mb-2">Selesai Ujian?</h3>
+        <p class="text-gray-600 mb-6">Kirim jawaban sekarang untuk melihat hasil.</p>
+        <div class="flex gap-3">
+            <button onclick="hideConfirm()" class="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-500">Batal</button>
+            <button onclick="finishExam()" class="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold shadow-lg">Kirim</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * URL Web App Google Apps Script Anda sudah terpasang.
+     */
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz1sq6Ks2rC3lIdcA3i9TRLPebUdny0st73zmcZXI7HVVSZ63hxJWsz3_rVOH3L0gdO/exec'; 
+
+    // Daftar Soal Ujian
+const questions = [
+  { 
+    id: 1, 
+    text: "Rumah adat dengan atap melengkung seperti perahu terbalik dan berasal dari Sulawesi Selatan adalah ....", 
+    options: [{id:'A', text:'Joglo'}, {id:'B', text:'Tongkonan'}, {id:'C', text:'Honai'}, {id:'D', text:'Gadang'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 2, 
+    text: "Sekelompok siswa menampilkan angklung dan lagu “Manuk Dadali”. Budaya tersebut berasal dari ....", 
+    options: [{id:'A', text:'Jawa Tengah'}, {id:'B', text:'Jawa Barat'}, {id:'C', text:'Bali'}, {id:'D', text:'Sumatra Barat'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 3, 
+    text: "Tradisi Bakar Batu dan rumah adat Honai berasal dari ....", 
+    options: [{id:'A', text:'Papua'}, {id:'B', text:'Bali'}, {id:'C', text:'NTB'}, {id:'D', text:'Maluku'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 4, 
+    text: "Jika sebuah sekolah hanya menampilkan satu budaya daerah saat pentas seni, dampaknya adalah ....", 
+    options: [{id:'A', text:'Siswa mengenal semua budaya'}, {id:'B', text:'Keberagaman kurang dihargai'}, {id:'C', text:'Persatuan semakin kuat'}, {id:'D', text:'Semua budaya sama'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 5, 
+    text: "Mempelajari lagu daerah dapat menumbuhkan ....", 
+    options: [{id:'A', text:'Persaingan antarbudaya'}, {id:'B', text:'Rasa saling menghargai'}, {id:'C', text:'Perpecahan'}, {id:'D', text:'Sikap meremehkan'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 6, 
+    text: "Rumah Gadang berasal dari ....", 
+    options: [{id:'A', text:'Aceh'}, {id:'B', text:'Sumatra Barat'}, {id:'C', text:'Riau'}, {id:'D', text:'Lampung'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 7, 
+    text: "Tari Kecak berasal dari ....", 
+    options: [{id:'A', text:'Bali'}, {id:'B', text:'Jawa Timur'}, {id:'C', text:'NTB'}, {id:'D', text:'NTT'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 8, 
+    text: "Pakaian adat Ulee Balang berasal dari ....", 
+    options: [{id:'A', text:'Aceh'}, {id:'B', text:'Jambi'}, {id:'C', text:'Bengkulu'}, {id:'D', text:'Riau'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 9, 
+    text: "Makna semboyan Bhinneka Tunggal Ika adalah ....", 
+    options: [{id:'A', text:'Satu budaya saja'}, {id:'B', text:'Berbeda-beda tetapi tetap satu'}, {id:'C', text:'Sama dalam segala hal'}, {id:'D', text:'Tidak ada perbedaan'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 10, 
+    text: "Jika budaya daerah tidak dilestarikan, maka ....", 
+    options: [{id:'A', text:'Budaya semakin berkembang'}, {id:'B', text:'Budaya akan punah'}, {id:'C', text:'Budaya bertambah banyak'}, {id:'D', text:'Budaya menjadi sama'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 11, 
+    text: "Rumah adat Joglo banyak ditemukan di ....", 
+    options: [{id:'A', text:'Jawa Tengah'}, {id:'B', text:'Bali'}, {id:'C', text:'Papua'}, {id:'D', text:'Aceh'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 12, 
+    text: "Ciri khas rumah Honai adalah ....", 
+    options: [{id:'A', text:'Atap gonjong'}, {id:'B', text:'Atap jerami dan berukuran kecil'}, {id:'C', text:'Atap limas bertingkat'}, {id:'D', text:'Atap melengkung'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 13, 
+    text: "Sikap yang tepat terhadap teman yang berbeda suku adalah ....", 
+    options: [{id:'A', text:'Mengejek'}, {id:'B', text:'Menghindari'}, {id:'C', text:'Menghargai'}, {id:'D', text:'Merendahkan'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 14, 
+    text: "Keberagaman budaya menjadi kekuatan bangsa jika ....", 
+    options: [{id:'A', text:'Dibanding-bandingkan'}, {id:'B', text:'Diremehkan'}, {id:'C', text:'Saling menghargai'}, {id:'D', text:'Dipilih salah satu'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 15, 
+    text: "Contoh sikap toleransi di sekolah adalah ....", 
+    options: [{id:'A', text:'Memilih teman yang sama suku'}, {id:'B', text:'Bekerja kelompok dengan siapa saja'}, {id:'C', text:'Menolak budaya lain'}, {id:'D', text:'Menertawakan budaya lain'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 16, 
+    text: "Tari Saman berasal dari ....", 
+    options: [{id:'A', text:'Aceh'}, {id:'B', text:'Bali'}, {id:'C', text:'Jawa Barat'}, {id:'D', text:'Papua'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 17, 
+    text: "Angklung dimainkan dengan cara ....", 
+    options: [{id:'A', text:'Dipukul'}, {id:'B', text:'Ditiup'}, {id:'C', text:'Digoyangkan'}, {id:'D', text:'Dipetik'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 18, 
+    text: "Lagu “Gundul-Gundul Pacul” berasal dari ....", 
+    options: [{id:'A', text:'Jawa Tengah'}, {id:'B', text:'Bali'}, {id:'C', text:'NTB'}, {id:'D', text:'Sumatra Barat'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 19, 
+    text: "Manfaat mempelajari budaya daerah lain adalah ....", 
+    options: [{id:'A', text:'Menambah wawasan'}, {id:'B', text:'Mengurangi persatuan'}, {id:'C', text:'Menghapus budaya'}, {id:'D', text:'Membandingkan budaya'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 20, 
+    text: "Pakaian adat biasanya digunakan saat ....", 
+    options: [{id:'A', text:'Bermain'}, {id:'B', text:'Upacara adat'}, {id:'C', text:'Tidur'}, {id:'D', text:'Olahraga'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 21, 
+    text: "Tari Piring berasal dari ....", 
+    options: [{id:'A', text:'Sumatra Barat'}, {id:'B', text:'Bali'}, {id:'C', text:'Aceh'}, {id:'D', text:'Jawa Barat'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 22, 
+    text: "Upaya melestarikan budaya di era digital adalah ....", 
+    options: [{id:'A', text:'Membagikan konten budaya positif'}, {id:'B', text:'Menghapus budaya lama'}, {id:'C', text:'Meniru budaya asing'}, {id:'D', text:'Mengganti budaya sendiri'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 23, 
+    text: "Rumah adat dengan atap menyerupai tanduk kerbau adalah ....", 
+    options: [{id:'A', text:'Joglo'}, {id:'B', text:'Honai'}, {id:'C', text:'Gadang'}, {id:'D', text:'Tongkonan'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 24, 
+    text: "Sikap bangga terhadap budaya sendiri sebaiknya ....", 
+    options: [{id:'A', text:'Disertai merendahkan budaya lain'}, {id:'B', text:'Disertai toleransi'}, {id:'C', text:'Dibandingkan dengan budaya lain'}, {id:'D', text:'Dipaksakan kepada orang lain'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 25, 
+    text: "Tari Jaipong berasal dari ....", 
+    options: [{id:'A', text:'Jawa Barat'}, {id:'B', text:'Bali'}, {id:'C', text:'NTB'}, {id:'D', text:'Riau'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 26, 
+    text: "Indonesia disebut negara yang kaya budaya karena ....", 
+    options: [{id:'A', text:'Memiliki banyak suku dan tradisi'}, {id:'B', text:'Memiliki satu budaya'}, {id:'C', text:'Tidak ada perbedaan'}, {id:'D', text:'All budaya sama'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 27, 
+    text: "Rumah adat berfungsi sebagai ....", 
+    options: [{id:'A', text:'Identitas daerah'}, {id:'B', text:'Tempat wisata saja'}, {id:'C', text:'Tempat bermain'}, {id:'D', text:'Simbol pribadi'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 28, 
+    text: "Jika terjadi perbedaan pendapat antarbudaya, sebaiknya ....", 
+    options: [{id:'A', text:'Bertengkar'}, {id:'B', text:'Bermusyawarah'}, {id:'C', text:'Menghindar'}, {id:'D', text:'Memaksakan pendapat'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 29, 
+    text: "Lagu daerah termasuk warisan budaya ....", 
+    options: [{id:'A', text:'Modern'}, {id:'B', text:'Tradisional'}, {id:'C', text:'Industri'}, {id:'D', text:'Asing'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 30, 
+    text: "Merendahkan budaya lain dapat menyebabkan ....", 
+    options: [{id:'A', text:'Kerukunan'}, {id:'B', text:'Persatuan'}, {id:'C', text:'Perpecahan'}, {id:'D', text:'Kekompakan'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 31, 
+    text: "Tari Tor-Tor berasal dari ....", 
+    options: [{id:'A', text:'Sumatra Utara'}, {id:'B', text:'Bali'}, {id:'C', text:'Papua'}, {id:'D', text:'NTB'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 32, 
+    text: "Menghargai keberagaman budaya merupakan pengamalan sila ke- ....", 
+    options: [{id:'A', text:'1'}, {id:'B', text:'2'}, {id:'C', text:'3'}, {id:'D', text:'5'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 33, 
+    text: "Belajar budaya daerah lain dapat ....", 
+    options: [{id:'A', text:'Mempersempit wawasan'}, {id:'B', text:'Menambah pengetahuan'}, {id:'C', text:'Menghilangkan identitas'}, {id:'D', text:'Menimbulkan konflik'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 34, 
+    text: "Upacara Ngaben berasal dari ....", 
+    options: [{id:'A', text:'Bali'}, {id:'B', text:'Jawa'}, {id:'C', text:'Aceh'}, {id:'D', text:'Papua'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 35, 
+    text: "Keberagaman budaya harus disikapi dengan ....", 
+    options: [{id:'A', text:'Diskriminasi'}, {id:'B', text:'Egois'}, {id:'C', text:'Toleransi'}, {id:'D', text:'Curiga'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 36, 
+    text: "Alat musik Sasando berasal dari ....", 
+    options: [{id:'A', text:'NTT'}, {id:'B', text:'Bali'}, {id:'C', text:'Jawa Barat'}, {id:'D', text:'Sumatra Barat'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 37, 
+    text: "Tujuan diadakannya pentas budaya di sekolah adalah ....", 
+    options: [{id:'A', text:'Membandingkan budaya'}, {id:'B', text:'Menumbuhkan rasa cinta budaya'}, {id:'C', text:'Mengurangi budaya'}, {id:'D', text:'Menilai budaya terbaik'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 38, 
+    text: "Tradisi Bakar Batu bertujuan untuk ....", 
+    options: [{id:'A', text:'Hiburan semata'}, {id:'B', text:'Mempererat kebersamaan'}, {id:'C', text:'Perlombaan'}, {id:'D', text:'Pertunjukan wisata'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 39, 
+    text: "Sikap terbaik saat melihat pertunjukan budaya lain adalah ....", 
+    options: [{id:'A', text:'Mengejek'}, {id:'B', text:'Menghargai'}, {id:'C', text:'Menolak'}, {id:'D', text:'Menertawakan'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 40, 
+    text: "Tari Reog berasal dari ....", 
+    options: [{id:'A', text:'Ponorogo'}, {id:'B', text:'Bali'}, {id:'C', text:'Papua'}, {id:'D', text:'Aceh'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 41, 
+    text: "Manfaat keberagaman budaya bagi pariwisata adalah ....", 
+    options: [{id:'A', text:'Menambah daya tarik wisata'}, {id:'B', text:'Mengurangi wisatawan'}, {id:'C', text:'Menghilangkan tradisi'}, {id:'D', text:'Mengurangi pendapatan'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 42, 
+    text: "Bahasa daerah perlu dilestarikan karena ....", 
+    options: [{id:'A', text:'Warisan leluhur'}, {id:'B', text:'Bahasa asing'}, {id:'C', text:'Bahasa modern'}, {id:'D', text:'Tidak penting'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 43, 
+    text: "Toleransi dalam keberagaman dapat menciptakan ....", 
+    options: [{id:'A', text:'Konflik'}, {id:'B', text:'Kerukunan'}, {id:'C', text:'Permusuhan'}, {id:'D', text:'Perpecahan'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 44, 
+    text: "Tari Serimpi berasal dari ....", 
+    options: [{id:'A', text:'Jawa Tengah'}, {id:'B', text:'Papua'}, {id:'C', text:'Bali'}, {id:'D', text:'Aceh'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 45, 
+    text: "Salah satu cara menjaga persatuan adalah ....", 
+    options: [{id:'A', text:'Memilih-milih teman'}, {id:'B', text:'Saling menghargai'}, {id:'C', text:'Merendahkan budaya lain'}, {id:'D', text:'Membandingkan budaya'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 46, 
+    text: "Generasi muda berperan dalam ....", 
+    options: [{id:'A', text:'Menghapus budaya'}, {id:'B', text:'Melestarikan budaya'}, {id:'C', text:'Mengganti budaya'}, {id:'D', text:'Mengabaikan budaya'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 47, 
+    text: "Rumah adat merupakan simbol ....", 
+    options: [{id:'A', text:'Kekayaan budaya'}, {id:'B', text:'Kekayaan pribadi'}, {id:'C', text:'Industri'}, {id:'D', text:'Politik'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 48, 
+    text: "Jika budaya dipromosikan dengan baik, maka ....", 
+    options: [{id:'A', text:'Budaya semakin dikenal'}, {id:'B', text:'Budaya hilang'}, {id:'C', text:'Budaya rusak'}, {id:'D', text:'Budaya dilupakan'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 49, 
+    text: "Keberagaman budaya menunjukkan bahwa Indonesia ....", 
+    options: [{id:'A', text:'Tidak bersatu'}, {id:'B', text:'Kaya akan tradisi'}, {id:'C', text:'Tidak memiliki identitas'}, {id:'D', text:'Hanya satu budaya'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 50, 
+    text: "Kesimpulan yang tepat tentang keberagaman budaya Indonesia adalah ....", 
+    options: [{id:'A', text:'Menjadi sumber perpecahan'}, {id:'B', text:'Menjadi kekuatan bangsa'}, {id:'C', text:'Tidak perlu dilestarikan'}, {id:'D', text:'Harus diseragamkan'}], 
+    correct: 'B' 
+  }    ];
+
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let userData = { name: '', absen: '' };
+    let startTime;
+    let timerInterval;
+
+    function startExam() {
+        userData.name = document.getElementById('name').value.trim();
+        userData.absen = document.getElementById('absen').value.trim();
+
+        if (!userData.name || !userData.absen) {
+            alert("Harap masukkan Nama dan No Absen!");
+            return;
+        }
+
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('exam-screen').classList.remove('hidden');
+        document.getElementById('total-questions').innerText = questions.length;
+        
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+        renderQuestion();
+    }
+
+    function updateTimer() {
+        const diff = Math.floor((new Date() - startTime) / 1000);
+        const m = Math.floor(diff / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        document.getElementById('timer').innerText = `${m}:${s}`;
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQuestionIndex];
+        document.getElementById('current-number').innerText = currentQuestionIndex + 1;
+        document.getElementById('question-text').innerText = q.text;
+        document.getElementById('progress-bar').style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        q.options.forEach(opt => {
+            const isSelected = userAnswers[currentQuestionIndex] === opt.id;
+            const div = document.createElement('div');
+            div.className = `option-item p-4 rounded-xl font-semibold flex items-center shadow-sm ${isSelected ? 'selected-option' : ''}`;
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full flex items-center justify-center mr-4 ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-blue-600'}">
+                    ${opt.id}
+                </div>
+                <span>${opt.text}</span>
+            `;
+            div.onclick = () => { 
+                userAnswers[currentQuestionIndex] = opt.id; 
+                renderQuestion(); 
+            };
+            container.appendChild(div);
+        });
+
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('prev-btn').style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+        document.getElementById('next-btn').innerText = currentQuestionIndex === questions.length - 1 ? "Selesai" : "Selanjutnya";
+    }
+
+    function handleNext() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        } else {
+            document.getElementById('confirm-modal').style.display = 'flex';
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function hideConfirm() { 
+        document.getElementById('confirm-modal').style.display = 'none'; 
+    }
+
+    async function finishExam() {
+        hideConfirm();
+        clearInterval(timerInterval);
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        let scoreCount = 0;
+        questions.forEach((q, i) => { 
+            if (userAnswers[i] === q.correct) scoreCount++; 
+        });
+        const finalScore = Math.round((scoreCount / questions.length) * 100);
+
+        const payload = new URLSearchParams();
+        payload.append('timestamp', new Date().toLocaleString('id-ID'));
+        payload.append('nama', userData.name);
+        payload.append('absen', userData.absen);
+        payload.append('skor', finalScore);
+        payload.append('durasi', document.getElementById('timer').innerText);
+        payload.append('jawaban', JSON.stringify(userAnswers));
+
+        try {
+            await fetch(scriptURL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: payload 
+            });
+            showResult(finalScore, scoreCount);
+        } catch (e) {
+            console.error("Gagal mengirim data:", e);
+            showResult(finalScore, scoreCount);
+        } finally {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+    }
+
+    function showResult(score, correctCount) {
+        document.getElementById('exam-screen').innerHTML = `
+            <div class="flex flex-col items-center justify-center text-center h-full py-10">
+                <h1 class="text-3xl font-black mb-2 uppercase">Hasil Ujian</h1>
+                <p class="text-gray-600 mb-8">${userData.name} (Absen: ${userData.absen})</p>
+                <div class="text-8xl font-black text-blue-600 mb-8">${score}</div>
+                <div class="bg-white rounded-2xl p-6 w-full shadow-sm border space-y-2 mb-8">
+                    <div class="flex justify-between"><span>Benar:</span><span class="font-bold text-green-600">${correctCount}</span></div>
+                    <div class="flex justify-between"><span>Salah:</span><span class="font-bold text-red-500">${questions.length - correctCount}</span></div>
+                    <div class="flex justify-between"><span>Waktu:</span><span class="font-bold">${document.getElementById('timer').innerText}</span></div>
+                </div>
+                <button onclick="location.reload()" class="btn-nav w-full py-4 text-lg uppercase shadow-lg">Kembali ke Awal</button>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
